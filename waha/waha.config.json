@@ -1,0 +1,12 @@
+{
+  "waha": {
+    "gows": {
+      "repo": "devlikeapro/gows",
+      "ref": "v1.0.36"
+    },
+    "dashboard": {
+      "repo": "devlikeapro/dashboard",
+      "ref": "24d3aca7113688eb2abaad9ff3716cdff540ae59"
+    }
+  }
+}
