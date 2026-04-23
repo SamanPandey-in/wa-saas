@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "WhatsApp Bulk Sender - Monorepo",
   "scripts": {
+    "setup": "npm install && npm run setup:server && npm run setup:client",
+    "setup:server": "npm install --prefix server",
+    "setup:client": "npm install --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "npm run dev --prefix server",
     "client": "npm run dev --prefix client",
