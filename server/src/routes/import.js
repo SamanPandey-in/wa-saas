@@ -1,12 +1,11 @@
 import express from 'express';
-import multer from 'multer';
 import fs from 'fs';
-import { parseFile } from '../utils/parser.js';
+import { upload } from '../services/upload.js';
+import { parseFile } from '../services/parseSpreadsheet.js';
 import db from '../db/index.js';
 
+const router = express.Router();
 
-// POST /api/import
-// Accepts multipart/form-data with field "file"
 router.post('/', upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
@@ -40,7 +39,6 @@ router.post('/', upload.single('file'), async (req, res) => {
       }
     }
 
-    // Clean up uploaded file
     fs.unlinkSync(req.file.path);
 
     res.json({
@@ -48,7 +46,7 @@ router.post('/', upload.single('file'), async (req, res) => {
       total: contacts.length,
       inserted,
       skipped,
-      errors: errors.slice(0, 20), // cap error list
+      errors: errors.slice(0, 20),
     });
   } catch (err) {
     console.error('Import error:', err);
