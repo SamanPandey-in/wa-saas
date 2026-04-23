@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { contacts as contactsApi, importer } from '../api';
 
 export default function ContactsPage() {
@@ -12,17 +12,26 @@ export default function ContactsPage() {
   const [newContact, setNewContact] = useState({ name: '', phone: '', email: '', tags: '' });
   const fileRef = useRef();
 
-  const fetchContacts = async () => {
+  const loadData = async (pageNum = page, searchTerm = search) => {
     setLoading(true);
     try {
-      const res = await contactsApi.list({ page, limit: 50, search });
+      const res = await contactsApi.list({ page: pageNum, limit: 50, search: searchTerm });
       setData(res);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchContacts(); }, [page, search]);
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    loadData(newPage, search);
+  };
+
+  const handleSearchChange = (term) => {
+    setSearch(term);
+    setPage(1);
+    loadData(1, term);
+  };
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -32,7 +41,7 @@ export default function ContactsPage() {
     try {
       const result = await importer.upload(file);
       setImportResult(result);
-      fetchContacts();
+      loadData();
     } catch (err) {
       setImportResult({ error: err.response?.data?.error || err.message });
     } finally {
@@ -50,7 +59,7 @@ export default function ContactsPage() {
       });
       setShowAddForm(false);
       setNewContact({ name: '', phone: '', email: '', tags: '' });
-      fetchContacts();
+      loadData();
     } catch (err) {
       alert(err.response?.data?.error || 'Failed to add contact');
     }
@@ -59,7 +68,7 @@ export default function ContactsPage() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this contact?')) return;
     await contactsApi.remove(id);
-    fetchContacts();
+    loadData();
   };
 
   return (
@@ -114,7 +123,7 @@ export default function ContactsPage() {
           type="text"
           placeholder="Search by name or phone..."
           value={search}
-          onChange={e => { setSearch(e.target.value); setPage(1); }}
+          onChange={e => handleSearchChange(e.target.value)}
           className="w-full max-w-xs bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
         />
       </div>
@@ -167,7 +176,7 @@ export default function ContactsPage() {
       {data.pages > 1 && (
         <div className="flex gap-2 mt-4 justify-end">
           {Array.from({ length: data.pages }, (_, i) => i + 1).map(p => (
-            <button key={p} onClick={() => setPage(p)}
+            <button key={p} onClick={() => handlePageChange(p)}
               className={`w-8 h-8 rounded text-sm font-medium transition-colors ${p === page ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}>
               {p}
             </button>

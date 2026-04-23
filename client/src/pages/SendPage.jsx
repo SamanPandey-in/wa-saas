@@ -128,7 +128,7 @@ export default function SendPage() {
 
         <div>
           <label className="text-sm font-medium text-gray-300 mb-2 block">Template Variables</label>
-          <p className="text-xs text-gray-500 mb-3">Fill values for {{1}}, {{2}}, {{3}} in your template</p>
+          <p className="text-xs text-gray-500 mb-3">Fill values for {'{{1}}'}, {'{{2}}'}, {'{{3}}'} in your template</p>
           <div className="grid grid-cols-3 gap-3">
             {['{{1}}', '{{2}}', '{{3}}'].map((placeholder, i) => (
               <div key={i}>

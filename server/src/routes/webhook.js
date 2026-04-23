@@ -53,6 +53,19 @@ router.post('/', express.json(), async (req, res) => {
             );
           }
         }
+
+        for (const message of val.messages || []) {
+          const from = message.from;
+          const text = (message.text?.body || '').toLowerCase().trim();
+
+          if (['stop', 'unsubscribe', 'opt out', 'optout', 'remove me'].includes(text)) {
+            await db.query(
+              'UPDATE contacts SET opted_in = false WHERE phone = $1',
+              [from]
+            );
+            console.log(`📵 Opted out: ${from}`);
+          }
+        }
       }
     }
   } catch (err) {
