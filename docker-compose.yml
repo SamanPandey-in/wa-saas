@@ -1,31 +1,61 @@
-version: "3.9"
+version: '3.8'
+
 services:
-  waha:
-    image: devlikeapro/waha
+  postgres:
+    image: postgres:16-alpine
+    container_name: wa-postgres
     ports:
-      - "3000:3000"
+      - "5432:5432"
     environment:
-      - WAHA_API_KEY=${WAHA_API_KEY}
-      - WAHA_DASHBOARD_USERNAME=admin
-      - WAHA_DASHBOARD_PASSWORD=${WAHA_DASHBOARD_PASSWORD}
-      - WHATSAPP_DEFAULT_ENGINE=WEBJS
-      - WAHA_BASE_URL=http://localhost:3000
+      - POSTGRES_USER=wa_user
+      - POSTGRES_PASSWORD=yourpassword
+      - POSTGRES_DB=wa_saas
     volumes:
-      - ./waha/sessions:/app/.sessions
-      - ./waha/media:/app/.media
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wa_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  backend:
-    build: ./backend
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
     ports:
-      - "4000:4000"
-    env_file: .env
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://wa_user:yourpassword@postgres:5432/wa_saas
+      - WHATSAPP_PHONE_NUMBER_ID=${WHATSAPP_PHONE_NUMBER_ID}
+      - WHATSAPP_ACCESS_TOKEN=${WHATSAPP_ACCESS_TOKEN}
+      - WHATSAPP_BUSINESS_ACCOUNT_ID=${WHATSAPP_BUSINESS_ACCOUNT_ID}
+      - WHATSAPP_API_VERSION=${WHATSAPP_API_VERSION:-v19.0}
+      - WEBHOOK_VERIFY_TOKEN=${WEBHOOK_VERIFY_TOKEN}
+      - FRONTEND_URL=http://localhost:5173
     depends_on:
-      - waha
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./server/src:/app/src
+      - /app/node_modules
 
-  automation:
-    build: ./automation
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
     ports:
-      - "4001:4001"
-    env_file: .env
-    depends_on:
-      - backend
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./client/src:/app/src
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: wa-saas-network
