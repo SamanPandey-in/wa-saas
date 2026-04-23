@@ -488,7 +488,7 @@ WHATSAPP_API_VERSION=v19.0
 WEBHOOK_VERIFY_TOKEN=any_random_secret_string
 
 # App
-PORT=4000
+PORT=5000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 ```
