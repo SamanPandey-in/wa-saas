@@ -85,4 +85,4 @@ async function markRead(messageId) {
   return graphPost(`/${PHONE_NUMBER_ID}/messages`, body);
 }
 
-export default { sendTemplateMessage, sendTextMessage, markRead };
+export { sendTemplateMessage, sendTextMessage, markRead };
